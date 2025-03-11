@@ -6,11 +6,11 @@ on:
             - "v*"
 
 permissions:
-    contents: write # ✅ Release 업로드 권한 추가
+    contents: write
 
 jobs:
     build:
-        runs-on: windows-latest # ✅ Windows에서만 실행 (Linux 제거)
+        runs-on: windows-latest
 
         steps:
             - name: Checkout repository
@@ -40,23 +40,11 @@ jobs:
                     echo "UPLOAD_FILE=dist/rttm_editor.exe" >> $GITHUB_ENV
                   }
 
-            - name: Upload Windows EXE as Artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: RTTM_Editor_Windows
-                  path: ${{ env.UPLOAD_FILE }}
-
     release:
         needs: build
         runs-on: ubuntu-latest
 
         steps:
-            - name: Download Windows EXE
-              uses: actions/download-artifact@v4
-              with:
-                  name: RTTM_Editor_Windows
-                  path: dist/
-
             - name: Upload to GitHub Release
               uses: softprops/action-gh-release@v1
               with:
