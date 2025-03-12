@@ -27,27 +27,32 @@ jobs:
             - name: Build Windows EXE
               run: pyinstaller --onefile --noconsole --name rttm_editor run.py
 
-            - name: Check File Size
-              id: check_size
-              run: |
-                  $fileSize = (Get-Item "dist/rttm_editor.exe").length / 1GB
-                  echo "File size: $fileSize GB"
-                  if ($fileSize -ge 2) {
-                    echo "File too large, compressing..."
-                    Compress-Archive -Path dist/rttm_editor.exe -DestinationPath dist/rttm_editor.zip
-                    echo "UPLOAD_FILE=dist/rttm_editor.zip" >> $GITHUB_ENV
-                  } else {
-                    echo "UPLOAD_FILE=dist/rttm_editor.exe" >> $GITHUB_ENV
-                  }
+            - name: Upload Windows EXE as Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: RTTM_Editor_Windows
+                  path: dist/rttm_editor.exe
 
     release:
         needs: build
         runs-on: ubuntu-latest
 
         steps:
-            - name: Upload to GitHub Release
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download Windows EXE
+              uses: actions/download-artifact@v4
+              with:
+                  name: RTTM_Editor_Windows
+                  path: dist/
+
+            - name: Show uploaded files
+              run: ls -lh dist/
+
+            - name: Upload EXE to GitHub Release
               uses: softprops/action-gh-release@v1
               with:
-                  files: dist/*
+                  files: dist/rttm_editor.exe
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
